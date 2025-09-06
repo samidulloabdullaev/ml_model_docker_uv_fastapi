@@ -1,3 +1,5 @@
 /__pycache__
 *.pyc
 /__pycacche__
+*.python-version
+/.venv
