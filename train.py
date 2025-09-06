@@ -25,47 +25,58 @@ def data_loader(data_url:str) -> pd.DataFrame:
     
     return df
 
+def train_model(df:pd.DataFrame) -> None:
+    
+    # Define features and target
+    y_train = df.churn
+
+    numerical = ['tenure', 'monthlycharges', 'totalcharges']
+    categorical = [
+        'gender',
+        'seniorcitizen',
+        'partner',
+        'dependents',
+        'phoneservice',
+        'multiplelines',
+        'internetservice',
+        'onlinesecurity',
+        'onlinebackup',
+        'deviceprotection',
+        'techsupport',
+        'streamingtv',
+        'streamingmovies',
+        'contract',
+        'paperlessbilling',
+        'paymentmethod',
+    ]
+
+    # Convert DataFrame to list of dictionaries
+    train_dict = df[categorical + numerical].to_dict(orient='records')
+
+
+    # Create unified pipeline
+    pipeline = make_pipeline(
+        DictVectorizer(),
+        LogisticRegression(solver='liblinear')
+    )
+
+    # Train the model
+    pipeline.fit(train_dict, y_train)
+    return pipeline
+
+
+def save_model(model, filename:str='model.bin') -> None:
+    """ Save the model to a file using pickle """
+    with open(filename, 'wb') as f_out:
+        pickle.dump(model, f_out)
+    
+    print(f'The model is saved to {filename}')
+
+
 # Load the data
 data_url = "https://raw.githubusercontent.com/alexeygrigorev/mlbookcamp-code/master/chapter-03-churn-prediction/WA_Fn-UseC_-Telco-Customer-Churn.csv"
-
 df = data_loader(data_url)
 
-# Define features and target
-y_train = df.churn
+pipeline = train_model(df)
 
-numerical = ['tenure', 'monthlycharges', 'totalcharges']
-categorical = [
-    'gender',
-    'seniorcitizen',
-    'partner',
-    'dependents',
-    'phoneservice',
-    'multiplelines',
-    'internetservice',
-    'onlinesecurity',
-    'onlinebackup',
-    'deviceprotection',
-    'techsupport',
-    'streamingtv',
-    'streamingmovies',
-    'contract',
-    'paperlessbilling',
-    'paymentmethod',
-]
-
-# Convert DataFrame to list of dictionaries
-train_dict = df[categorical + numerical].to_dict(orient='records')
-
-
-# Create unified pipeline
-pipeline = make_pipeline(
-    DictVectorizer(),
-    LogisticRegression(solver='liblinear')
-)
-
-# Train the model
-pipeline.fit(train_dict, y_train)
-
-# saving the model
-with open('model.bin', 'wb') as f_out:
-    pickle.dump(pipeline, f_out)
+save_model(pipeline, 'model.bin')
