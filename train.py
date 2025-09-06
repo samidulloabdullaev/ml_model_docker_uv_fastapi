@@ -5,6 +5,7 @@ import numpy as np
 
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
 
 def data_loader(data_url:str) -> pd.DataFrame:
     
@@ -24,15 +25,15 @@ def data_loader(data_url:str) -> pd.DataFrame:
     
     return df
 
+# Load the data
 data_url = "https://raw.githubusercontent.com/alexeygrigorev/mlbookcamp-code/master/chapter-03-churn-prediction/WA_Fn-UseC_-Telco-Customer-Churn.csv"
 
 df = data_loader(data_url)
 
+# Define features and target
 y_train = df.churn
 
-
 numerical = ['tenure', 'monthlycharges', 'totalcharges']
-
 categorical = [
     'gender',
     'seniorcitizen',
@@ -52,11 +53,19 @@ categorical = [
     'paymentmethod',
 ]
 
-
-dv = DictVectorizer()
-
+# Convert DataFrame to list of dictionaries
 train_dict = df[categorical + numerical].to_dict(orient='records')
-X_train = dv.fit_transform(train_dict)
 
-model = LogisticRegression(solver='liblinear')
-model.fit(X_train, y_train)
+
+# Create unified pipeline
+pipeline = make_pipeline(
+    DictVectorizer(),
+    LogisticRegression(solver='liblinear')
+)
+
+# Train the model
+pipeline.fit(train_dict, y_train)
+
+# saving the model
+with open('model.bin', 'wb') as f_out:
+    pickle.dump(pipeline, f_out)
