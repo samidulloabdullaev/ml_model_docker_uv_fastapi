@@ -4,7 +4,6 @@ url = 'http://localhost:8080/predict'
 
 
 curtomer = {
-  "customerid": "7590-vhveg",
   "gender": "female",
   "seniorcitizen": 0,
   "partner": "yes",
@@ -23,14 +22,14 @@ curtomer = {
   "paperlessbilling": "yes",
   "paymentmethod": "electronic_check",
   "monthlycharges": 239.85,
-  "totalcharges": 2129.85
+  "totalcharges": 2129.85,
 }
 
 response = requests.post(url, json=curtomer)
 churn = response.json()
 print("response", churn)
 
-if churn['churn'] == 'Churn':
+if churn['churn'] == 1:
     print("Send email to the customer with promotion")
 else:
     print("Do not send email to the customer")

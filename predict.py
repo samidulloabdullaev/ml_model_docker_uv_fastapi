@@ -31,10 +31,16 @@ class Customer(BaseModel):
     monthlycharges: float = Field(..., ge=0.0)
     totalcharges: float = Field(..., ge=0.0)
 
+    class Config:
+        extra = "forbid"
+
 
 class PredictResponse(BaseModel):
     churn_probability: float
     churn: bool
+
+    class Config:
+        extra = "forbid"
 
 
 app = fastapi.FastAPI(title="Churn Prediction")
@@ -43,18 +49,20 @@ app = fastapi.FastAPI(title="Churn Prediction")
 with open('model.bin', 'rb') as f_in:
     model = pickle.load(f_in)
 
-def predict_single(customer:Dict[str, Any]) -> float:
+
+def predict_single(customer):
     result = model.predict_proba(customer)[0, 1]
     return float(result)
 
-@app.post("/predict")
-def predict(customer:Customer) -> PredictResponse:
-    preds = model.predict_proba(customer)[0, 1]
-    return PredictResponse(
-        churn_probability= preds,
-        churn = bool(preds >= 0.5)
-    )
 
+@app.post("/predict")
+def predict(customer: Customer) -> PredictResponse:
+    prob = predict_single(customer.model_dump())
+
+    return PredictResponse(
+        churn_probability=prob,
+        churn=prob >= 0.5
+    )
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)
