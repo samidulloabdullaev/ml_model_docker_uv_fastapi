@@ -1,6 +1,6 @@
 FROM python:3.9-slim-bookworm
 
-RUN pip install uv 
+RUN pip install uv && pip install uvicorn
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ COPY pyproject.toml uv.lock ./
 
 RUN uv sync --locked
 
-COPY predict.py model.bin, ./
+COPY predict.py model.bin ./
 
 EXPOSE 8080
 
