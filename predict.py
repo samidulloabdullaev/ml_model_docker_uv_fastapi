@@ -1,7 +1,40 @@
 import pickle
 import fastapi
 import uvicorn
-from typing import Dict, Any
+from typing import Dict, Any, Literal
+from pydantic import BaseModel, Field
+
+
+class Customer(BaseModel):
+    gender: Literal["male", "female"]
+    seniorcitizen: Literal[0, 1]
+    partner: Literal["yes", "no"]
+    dependents: Literal["yes", "no"]
+    phoneservice: Literal["yes", "no"]
+    multiplelines: Literal["no", "yes", "no_phone_service"]
+    internetservice: Literal["dsl", "fiber_optic", "no"]
+    onlinesecurity: Literal["no", "yes", "no_internet_service"]
+    onlinebackup: Literal["no", "yes", "no_internet_service"]
+    deviceprotection: Literal["no", "yes", "no_internet_service"]
+    techsupport: Literal["no", "yes", "no_internet_service"]
+    streamingtv: Literal["no", "yes", "no_internet_service"]
+    streamingmovies: Literal["no", "yes", "no_internet_service"]
+    contract: Literal["month-to-month", "one_year", "two_year"]
+    paperlessbilling: Literal["yes", "no"]
+    paymentmethod: Literal[
+        "electronic_check",
+        "mailed_check",
+        "bank_transfer_(automatic)",
+        "credit_card_(automatic)",
+    ]
+    tenure: int = Field(..., ge=0)
+    monthlycharges: float = Field(..., ge=0.0)
+    totalcharges: float = Field(..., ge=0.0)
+
+
+class PredictResponse(BaseModel):
+    churn_probability: float
+    churn: bool
 
 
 app = fastapi.FastAPI(title="Churn Prediction")
@@ -15,12 +48,12 @@ def predict_single(customer:Dict[str, Any]) -> float:
     return float(result)
 
 @app.post("/predict")
-def predict(customer:Dict[str, Any]) -> dict:
+def predict(customer:Customer) -> PredictResponse:
     preds = model.predict_proba(customer)[0, 1]
-    return {
-        'churn_probability': float(preds),
-        'churn': 'Churn' if preds >= 0.5 else 'No Churn'
-    }
+    return PredictResponse(
+        churn_probability= preds,
+        churn = bool(preds >= 0.5)
+    )
 
 
 if __name__ == "__main__":
