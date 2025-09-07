@@ -1,7 +1,6 @@
 import pickle
 
 import pandas as pd
-import numpy as np
 
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import LogisticRegression
