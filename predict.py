@@ -46,7 +46,7 @@ class PredictResponse(BaseModel):
 app = fastapi.FastAPI(title="Churn Prediction")
 
 # read the model
-with open('model.bin', 'rb') as f_in:
+with open("model.bin", "rb") as f_in:
     model = pickle.load(f_in)
 
 
@@ -59,10 +59,8 @@ def predict_single(customer):
 def predict(customer: Customer) -> PredictResponse:
     prob = predict_single(customer.model_dump())
 
-    return PredictResponse(
-        churn_probability=prob,
-        churn=prob >= 0.5
-    )
+    return PredictResponse(churn_probability=prob, churn=prob >= 0.5)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)

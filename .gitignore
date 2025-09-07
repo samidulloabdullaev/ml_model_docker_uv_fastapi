@@ -3,3 +3,4 @@
 /__pycacche__
 *.python-version
 /.venv
+*.ruff_cache
